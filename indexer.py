@@ -63,11 +63,11 @@ class Index:
             val.final_sort_postinglist()
 
     # --------------------------------------------------------------------------- #
-    def calculate_average_doc_len(self) -> float:
+    def calculate_average_doc_len(self):
         average_length = 0
         for doc_id, doc_length in self.documentIDs.items():
             average_length += doc_length
-        return average_length / len(self.documentIDs.items())
+        self.average_doc_len = average_length / len(self.documentIDs.items())
 
 
 # =========================================================================== #
