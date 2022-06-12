@@ -7,3 +7,5 @@ TERM_SPLIT_CHARACTERS = ["\" ", " \"", "?", ", ", "!", ".\n", ". ", "&", "\n", "
 
 ABSTRACT_BEGINNINGS = ["Abstract", "Preface", "Summary", "Short", "Synopsis", "Excerpt"]
 
+# Amount of documents that should be returned
+K = 20

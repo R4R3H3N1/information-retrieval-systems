@@ -40,7 +40,7 @@ def tokenize_documents(documents: List[str]) -> Generator[Tuple[str, List[str]],
         tmp = re.split(r'\t', line)
         if len(tmp) != 2:
             continue
-        docID, text = int(tmp[0].split("-")[1].strip()), tmp[1]
+        docID, text = tmp[0].split("-")[1].strip(), tmp[1]
         new_tokens = get_token_from_line(text)
 
         yield int(docID), new_tokens

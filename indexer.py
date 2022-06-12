@@ -41,7 +41,7 @@ class Index:
         for docID, tokens in tokenize_documents(docs):
             positionCounter = 1
             int_doc_id = int(docID)
-            self.documentIDs.add(int_doc_id)
+            self.documentIDs.add((int_doc_id, len(tokens)))
             for token in tokens:
                 try:
                     ti = self.termClassMapping[token]
