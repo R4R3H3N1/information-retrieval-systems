@@ -21,6 +21,7 @@ def calc_query_terms_dictionary(terms: List[str]) -> dict:
 # TODO implement method to return k doc ids with highest score
 def get_top_k_docs(scores: np.ndarray, k: int) -> List[int]:
     top_k_doc_ids = []
+
     for i in range(k):
         new_result_doc_id = np.argmax(scores)
         top_k_doc_ids.append(new_result_doc_id)
@@ -43,9 +44,18 @@ def fast_cosine_score(index: indexer.Index, query: str) -> List[int]:
     # TODO maybe use dict as doc ids are not continuous thus lot of unused array space
     scores = np.zeros((np.max(list(index.documentIDs.keys())) + 1))
     for query_term, query_term_freq in query_terms_dic.items():
-        posting_list_obj = index.dictionary[index.termClassMapping[query_term]]
-        for doc_id in posting_list_obj.plist:
-            scores[doc_id] += calc_w_f(index, query_term, query_term_freq, doc_id, posting_list_obj)
+        try:
+            posting_list_obj = index.dictionary[index.termClassMapping[query_term]]
+            for doc_id in posting_list_obj.plist:
+                scores[doc_id] += calc_w_f(index, query_term, query_term_freq, doc_id, posting_list_obj)
+        except KeyError:
+            print(f"The query term: {query_term} is not included in the dictionary")
+
+    # If all terms of query are not included in the dictionary return empty result
+    if np.max(scores) == 0.0:
+        return []
+
     for doc_id, len_doc in index.documentIDs.items():
         scores[doc_id] = scores[doc_id] / len_doc
+
     return get_top_k_docs(scores, configuration.TOP_K_DOCS)
