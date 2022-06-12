@@ -40,6 +40,7 @@ def calc_w_f(index: indexer.Index, term: str, query_freq: int, doc_id: int, post
 
 def fast_cosine_score(index: indexer.Index, query: str) -> List[int]:
     query_terms = tokenizer.get_token_from_line(query)
+    print(f"Extracted the following terms from the query: {query_terms}")
     query_terms_dic = calc_query_terms_dictionary(query_terms)
     # TODO maybe use dict as doc ids are not continuous thus lot of unused array space
     scores = np.zeros((np.max(list(index.documentIDs.keys())) + 1))
