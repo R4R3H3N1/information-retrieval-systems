@@ -13,18 +13,20 @@ import configuration
 
 # =========================================================================== #
 class Index:
-    __slots__ = ('dictionary', 'termClassMapping', 'documentIDs', 'kgramMap')
+    __slots__ = ('dictionary', 'termClassMapping', 'documentIDs', 'kgramMap', "average_doc_len")
 
     def __init__(self, filename: str):
 
         self.dictionary = {}
         self.termClassMapping = {}
         self.kgramMap = {}
-        self.documentIDs = set()
+        self.documentIDs = {}
+        self.average_doc_len = 0.0
 
         print("Started creating index")
         start = time.time()
         self.invoke_toknizer(filename)
+        self.calculate_average_doc_len()
         print(f"Creating index took {round(time.time() - start, 3)} seconds.")
 
     # --------------------------------------------------------------------------- #
@@ -41,7 +43,7 @@ class Index:
         for docID, tokens in tokenize_documents(docs):
             positionCounter = 1
             int_doc_id = int(docID)
-            self.documentIDs.add((int_doc_id, len(tokens)))
+            self.documentIDs[int_doc_id] = len(tokens)
             for token in tokens:
                 try:
                     ti = self.termClassMapping[token]
@@ -60,6 +62,13 @@ class Index:
         for key, val in self.dictionary.items():
             val.final_sort_postinglist()
 
+    # --------------------------------------------------------------------------- #
+    def calculate_average_doc_len(self) -> float:
+        average_length = 0
+        for doc_id, doc_length in self.documentIDs.items():
+            average_length += doc_length
+        return average_length / len(self.documentIDs.items())
+
 
 # =========================================================================== #
 class TermIndex:
@@ -75,11 +84,12 @@ class TermIndex:
 
 # =========================================================================== #
 class Postinglist:
-    __slots__ = ('plist', 'seenDocIDs', 'positions')
+    __slots__ = ('plist', 'seenDocIDs', 'positions', 'occurrence')
 
     def __init__(self, docID: int = None, position: int = None):
         self.plist = []   # List of sorted DocIDs
         self.positions = {}  # map docID:positions within docID
+        self.occurrence = 1
 
         self.seenDocIDs = set()
         if docID:
@@ -96,13 +106,17 @@ class Postinglist:
         if isinstance(position, list):
             try:
                 [self.positions[docID].append(pos) for pos in position]
+                self.occurrence += len(position)
             except KeyError:
                 self.positions[docID] = position
+                self.occurrence += len(position)
         else:
             try:
                 self.positions[docID].append(position)
+                self.occurrence += 1
             except KeyError:
                 self.positions[docID] = [position]
+                self.occurrence += 1
 
         if docID in self.seenDocIDs:
             pass
