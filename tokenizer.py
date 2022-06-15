@@ -6,14 +6,13 @@ import configuration
 
 
 # --------------------------------------------------------------------------- #
-def get_token_from_line(line: str) -> List[str]:
+def create_token_stream(line: str) -> List[str]:
 
     line = line.lower()
 
     for character in configuration.TERM_SPLIT_CHARACTERS:
         line = line.replace(character, " ")
 
-    #if line[len(line) - 1] == ".":
     if line.endswith('.'):
         line = line[:-1]
 
@@ -21,17 +20,7 @@ def get_token_from_line(line: str) -> List[str]:
 
 
 # --------------------------------------------------------------------------- #
-def exclude_abstract_beginnings(abstract: str) -> str:
-    """
-    remove terms like preface, summary, etc. from document abstarct
-    """
-    for beginning in configuration.ABSTRACT_BEGINNINGS:
-        abstract = re.sub(r'^' + beginning, '', abstract, re.IGNORECASE).strip()
-    return abstract
-
-
-# --------------------------------------------------------------------------- #
-def tokenize_documents(documents: List[str]) -> Generator[Tuple[str, List[str]], None, None]:
+def tokenize_documents(documents: List[str]) -> Generator[Tuple[int, List[str]], None, None]:
     """
     :param documents: list of documents
     :return: generator - docID, tokens in order of apperance
@@ -40,9 +29,8 @@ def tokenize_documents(documents: List[str]) -> Generator[Tuple[str, List[str]],
         tmp = re.split(r'\t', line)
         if len(tmp) != 2:
             continue
-        docID, text = tmp[0].split("-")[1].strip(), tmp[1]
-        new_tokens = get_token_from_line(text)
+        docid, text = tmp[0].split("-")[1].strip(), tmp[1]
+        docid = docid.replace('MED-', '')
+        tokens = create_token_stream(text)
 
-        yield int(docID), new_tokens
-
-
+        yield int(docid), tokens
