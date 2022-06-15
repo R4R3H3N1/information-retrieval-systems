@@ -38,9 +38,10 @@ class VectorSpaceModel(InitRetrievalSystem):
         self.dictionary = {}
         self.term_index_mapping = {}
         self.docid_length_mapping = {}
+        self.average_doc_len = 0.0
 
-        self.invoke_toknizer(filename
-                             )
+        self.invoke_toknizer(filename)
+        self.calculate_average_doc_len()
 
     # --------------------------------------------------------------------------- #
     def invoke_toknizer(self, filename: str) -> None:
@@ -74,6 +75,13 @@ class VectorSpaceModel(InitRetrievalSystem):
             val.final_sort_postinglist()
 
     # --------------------------------------------------------------------------- #
+    def calculate_average_doc_len(self):
+        average_length = 0
+        for doc_id, doc_length in self.docid_length_mapping.items():
+            average_length += doc_length
+        self.average_doc_len = average_length / len(self.docid_length_mapping.items())
+
+    # --------------------------------------------------------------------------- #
     def retrieve(self, query):
         query_terms = tokenizer.create_token_stream(query)
         query_tf = Counter(query_terms)
@@ -92,13 +100,14 @@ class VectorSpaceModel(InitRetrievalSystem):
                 continue
 
             for docid in postinglist_obj.plist:
-                scores[docid] += self.calc_score(N_DOCUMENTS, postinglist_obj, docid)
+                #scores[docid] += self.calc_score(N_DOCUMENTS, postinglist_obj, docid)
+                scores[docid] += self.fast_cosine_score(postinglist_obj, docid, q_term_tf)
 
         # TODO vectorizable
         for docid, _len in self.docid_length_mapping.items():
             scores[docid] = scores[docid] / _len
 
-        return np.argwhere(scores != 0).flatten().tolist()
+        return scores
 
     # --------------------------------------------------------------------------- #
     def calc_score(self, n_docs: int, postinglist_obj: Postinglist, docid: int) -> float:
@@ -106,10 +115,18 @@ class VectorSpaceModel(InitRetrievalSystem):
         idf = n_docs / len(postinglist_obj.plist)
         return (1 + np.log10(tf)) * np.log10(idf)
 
+    def fast_cosine_score(self, posting_list_obj, doc_id, query_freq):
+        term_doc_freq = len(posting_list_obj.positions[doc_id])
+        len_doc = self.docid_length_mapping[doc_id]
+        N_DOCUMENTS = len(self.docid_length_mapping)
+        d_f_t = posting_list_obj.occurrence
+        return query_freq * (term_doc_freq / (term_doc_freq + (configuration.K * (len_doc / self.average_doc_len)))
+                             * np.log((N_DOCUMENTS / d_f_t)))
+
     # --------------------------------------------------------------------------- #
     def retrieve_k(self, query, k):
 
-        return self.get_top_k(np.asarray(self.retrieve(query)), k)
+        return self.get_top_k(self.retrieve(query), k)
 
     # --------------------------------------------------------------------------- #
     def get_top_k(self, scores, k):

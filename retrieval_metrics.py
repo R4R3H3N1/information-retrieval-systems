@@ -235,10 +235,10 @@ class RetrievalScorer:
         list_f1 = []
 
         for qid, rel_docs in rel_map.items():
-            result = self.retrieval_system.retrieve_k(q_map[qid], 15)
+            result = self.retrieval_system.retrieve_k(q_map[qid], configuration.TOP_K_DOCS)
             try:
                 # tupel in case of retrieve_k()
-                predicted = [res[1] for res in result]
+                predicted = [res[0] for res in result]
             except Exception:
                 predicted = result
             # TODO predeicted sorting relavant?
