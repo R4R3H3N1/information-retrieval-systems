@@ -88,11 +88,11 @@ class VectorSpaceModel(InitRetrievalSystem):
             try:
                 postinglist_obj = self.dictionary[self.term_index_mapping[q_term]]
             except KeyError as k:
-                print(f'term {q_term} not present in corpus')
+                #print(f'term {q_term} not present in corpus')
                 continue
 
             for docid in postinglist_obj.plist:
-                scores[docid] = self.calc_score(N_DOCUMENTS, postinglist_obj, docid)
+                scores[docid] += self.calc_score(N_DOCUMENTS, postinglist_obj, docid)
 
         # TODO vectorizable
         for docid, _len in self.docid_length_mapping.items():
@@ -108,12 +108,15 @@ class VectorSpaceModel(InitRetrievalSystem):
 
     # --------------------------------------------------------------------------- #
     def retrieve_k(self, query, k):
-        return self.get_top_k(self.retrieve(query), k)
+
+        return self.get_top_k(np.asarray(self.retrieve(query)), k)
 
     # --------------------------------------------------------------------------- #
     def get_top_k(self, scores, k):
         top_k_docids = []
-
+        if scores.size == 0:
+            return []
+        
         for i in range(k):
             docid = np.argmax(scores)
             top_k_docids.append((docid, scores[docid]))

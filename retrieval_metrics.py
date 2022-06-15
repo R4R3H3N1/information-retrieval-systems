@@ -235,7 +235,7 @@ class RetrievalScorer:
         list_f1 = []
 
         for qid, rel_docs in rel_map.items():
-            result = self.retrieval_system.retrieve(q_map[qid])
+            result = self.retrieval_system.retrieve_k(q_map[qid], 15)
             try:
                 # tupel in case of retrieve_k()
                 predicted = [res[1] for res in result]
