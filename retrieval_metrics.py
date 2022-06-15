@@ -235,6 +235,8 @@ class RetrievalScorer:
         list_f1 = []
 
         for qid, rel_docs in rel_map.items():
+            if qid not in ["PLAIN-121", "PLAIN-1021", "PLAIN-15", "PLAIN-145", "PLAIN-1336"]:
+                continue
             result = self.retrieval_system.retrieve_k(q_map[qid], configuration.TOP_K_DOCS)
             try:
                 # tupel in case of retrieve_k()
@@ -244,12 +246,12 @@ class RetrievalScorer:
             # TODO predeicted sorting relavant?
 
             prec, rec, f1 = precision_recall_fscore(y_true=rel_docs, y_pred=predicted)
-            #print(f'{q_map[qid]} \n \t TRUE: {rel_docs} \n  \t PRED: {predicted} \n \t Precision: {prec} Recall: {rec} F1: {f1} \n')
+            print(f'{q_map[qid]} \n \t TRUE: {rel_docs} \n  \t PRED: {predicted} \n \t Precision: {prec} Recall: {rec} F1: {f1} \n')
             list_recall.append(rec)
             list_precision.append(prec)
             list_f1.append(f1)
 
-        self.plot_metric(list_f1)
+        self.plot_metric(list_precision)
 
     def plot_metric(self, metric):
         plt.hist(metric)

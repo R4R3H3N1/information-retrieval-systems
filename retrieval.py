@@ -104,8 +104,8 @@ class VectorSpaceModel(InitRetrievalSystem):
                 scores[docid] += self.fast_cosine_score(postinglist_obj, docid, q_term_tf)
 
         # TODO vectorizable
-        for docid, _len in self.docid_length_mapping.items():
-            scores[docid] = scores[docid] / _len
+        #for docid, _len in self.docid_length_mapping.items():
+        #    scores[docid] = scores[docid] / _len
 
         return scores
 
