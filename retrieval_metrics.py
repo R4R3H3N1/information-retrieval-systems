@@ -229,7 +229,9 @@ class RetrievalScorer:
         try:
             ap_sum = 0
             for i in range(len(queries)):
-                ap_sum += average_precision(queries[i], groundtruths[i])
+                ap_sum += average_precision([res[0] for res in self.retrieval_system.retrieve_k(queries[i],
+                                                                                                configuration.K)],
+                                            groundtruths[i])
             return (1 / len(queries)) * ap_sum
         except ZeroDivisionError:
             return 0.0
