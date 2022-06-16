@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import configuration
 import os
 
+
 # --------------------------------------------------------------------------- #
 def precision(y_true, y_pred):
     """
@@ -19,15 +20,12 @@ def precision(y_true, y_pred):
         Score: float
             Precision = TP / (TP + FP)
     """
-    true_set = set(y_true)
-    tp = []
-    fp = []
 
-    for y in y_pred:
-        if y in true_set:
-            tp.append(y)
-        else:
-            fp.append(y)
+    y_true_set = set(y_true)
+    y_pred_set = set(y_pred)
+
+    tp = y_true_set.intersection(y_pred_set)
+    fp = y_true_set.difference(y_pred_set)
 
     try:
         return len(tp) / (len(tp) + len(fp))
@@ -52,20 +50,17 @@ def recall(y_true, y_pred):
         Score: float
             Recall = TP / (TP + FN)
     """
-    pred_set = set(y_pred)
-    tp = []
-    fn = []
+    y_true_set = set(y_true)
+    y_pred_set = set(y_pred)
 
-    for y in y_true:
-        if y in pred_set:
-            tp.append(y)
-        else:
-            fn.append(y)
+    tp = y_true_set.intersection(y_pred_set)
+    fn = y_pred_set.difference(y_true_set)
 
     try:
         return len(tp) / (len(tp) + len(fn))
     except ZeroDivisionError:
         return 0.0
+
 
 # --------------------------------------------------------------------------- #
 def fscore(y_true, y_pred, beta=1.0):
@@ -93,6 +88,7 @@ def fscore(y_true, y_pred, beta=1.0):
         return ((1 + beta**2) * _precision * _recall)/(beta**2 * _precision + _recall)
     except ZeroDivisionError:
         return 0.0
+
 
 # --------------------------------------------------------------------------- #
 def precision_recall_fscore(y_true, y_pred, beta=1.0):

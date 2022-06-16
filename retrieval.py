@@ -32,6 +32,7 @@ class InitRetrievalSystem(ABC):
     def retrieve_k(self, query, k):
         pass
 
+
 # =========================================================================== #
 class VectorSpaceModel(InitRetrievalSystem):
     def __init__(self, filename: str):
@@ -96,16 +97,15 @@ class VectorSpaceModel(InitRetrievalSystem):
             try:
                 postinglist_obj = self.dictionary[self.term_index_mapping[q_term]]
             except KeyError as k:
-                #print(f'term {q_term} not present in corpus')
+                print(f'Term {q_term} not present in corpus')
                 continue
 
             for docid in postinglist_obj.plist:
-                #scores[docid] += self.calc_score(N_DOCUMENTS, postinglist_obj, docid)
                 scores[docid] += self.fast_cosine_score(postinglist_obj, docid, q_term_tf)
 
         # TODO vectorizable
-        #for docid, _len in self.docid_length_mapping.items():
-        #    scores[docid] = scores[docid] / _len
+        for docid, _len in self.docid_length_mapping.items():
+            scores[docid] = scores[docid] / _len
 
         return scores
 
