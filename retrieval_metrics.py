@@ -24,8 +24,8 @@ def precision(y_true, y_pred):
     y_true_set = set(y_true)
     y_pred_set = set(y_pred)
 
-    tp = y_true_set.intersection(y_pred_set)
-    fp = y_true_set.difference(y_pred_set)
+    tp = y_pred_set.intersection(y_true_set)
+    fp = y_pred_set.difference(y_true_set)
 
     try:
         return len(tp) / (len(tp) + len(fp))
@@ -53,8 +53,8 @@ def recall(y_true, y_pred):
     y_true_set = set(y_true)
     y_pred_set = set(y_pred)
 
-    tp = y_true_set.intersection(y_pred_set)
-    fn = y_pred_set.difference(y_true_set)
+    tp = y_pred_set.intersection(y_true_set)
+    fn = y_true_set.difference(y_pred_set)
 
     try:
         return len(tp) / (len(tp) + len(fn))
@@ -86,7 +86,7 @@ def fscore(y_true, y_pred, beta=1.0):
     _recall = recall(y_true, y_pred)
 
     try:
-        return (1 + beta**2) * ((_precision * _recall) / ((beta**2 * _precision) + _recall)) 
+        return (1 + beta**2) * ((_precision * _recall) / ((beta**2 * _precision) + _recall))
     except ZeroDivisionError:
         return 0.0
 
@@ -129,7 +129,7 @@ class RetrievalScorer:
         self.retrieval_system = system
 
     # --------------------------------------------------------------------------- #
-    def rPrecision(self, y_true, query):
+    def rPrecision(self, y_true, y_pred):
         """
         Calculates the precision at R where R denotes the number of all relevant
         documents to a given query.
@@ -146,7 +146,8 @@ class RetrievalScorer:
         Score: float
             R-precision = TP / (TP + FN)
         """
-        pass
+        y_true_set = set(y_true)
+
 
     # --------------------------------------------------------------------------- #
     def elevenPointAP(self, query, y_true):
