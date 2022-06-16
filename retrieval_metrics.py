@@ -58,6 +58,7 @@ def average_precision(y_true, y_pred):
     except ZeroDivisionError:
         return 0.0
 
+
 # --------------------------------------------------------------------------- #
 def recall(y_true, y_pred):
     """
@@ -121,7 +122,13 @@ def precision_recall_fscore(y_true, y_pred, beta=1.0):
     return precision(y_true, y_pred), recall(y_true, y_pred), fscore(y_true, y_pred, beta)
 
 
-# =========================================================================== #
+# --------------------------------------------------------------------------- #
+def plot_metric(metric_name, metric):
+    plt.title(metric_name)
+    plt.hist(metric)
+    plt.show()
+
+
 class RetrievalScorer:
     """
     Retrieval score system.
@@ -272,16 +279,16 @@ class RetrievalScorer:
         list_recall = []
         list_f1 = []
 
+        r_precision = []
+
         for qid, rel_docs in rel_map.items():
-            if qid not in ["PLAIN-121", "PLAIN-1021", "PLAIN-15", "PLAIN-145", "PLAIN-1336"]:
-                continue
             result = self.retrieval_system.retrieve_k(q_map[qid], configuration.TOP_K_DOCS)
+            r_precision.append(self.rPrecision(rel_docs, q_map[qid]))
             try:
                 # tupel in case of retrieve_k()
                 predicted = [res[0] for res in result]
             except Exception:
                 predicted = result
-            # TODO predeicted sorting relavant?
 
             prec, rec, f1 = precision_recall_fscore(y_true=rel_docs, y_pred=predicted)
             print(f'{q_map[qid]} \n \t TRUE: {rel_docs} \n  \t PRED: {predicted} \n \t Precision: {prec} Recall: {rec} F1: {f1} \n')
@@ -289,8 +296,4 @@ class RetrievalScorer:
             list_precision.append(prec)
             list_f1.append(f1)
 
-        self.plot_metric(list_precision)
-
-    def plot_metric(self, metric):
-        plt.hist(metric)
-        plt.show()
+        plot_metric("R-Precision", r_precision)
