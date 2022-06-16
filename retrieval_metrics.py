@@ -81,11 +81,12 @@ def fscore(y_true, y_pred, beta=1.0):
         Score: float
             F-Measure = (1 + beta^2) \cdot \frac{Precision \cdot Recall}{beta^2 \cdot Precision+Recal}
     """
+
     _precision = precision(y_true, y_pred)
     _recall = recall(y_true, y_pred)
 
     try:
-        return ((1 + beta**2) * _precision * _recall)/(beta**2 * _precision + _recall)
+        return (1 + beta**2) * ((_precision * _recall) / ((beta**2 * _precision) + _recall)) 
     except ZeroDivisionError:
         return 0.0
 
