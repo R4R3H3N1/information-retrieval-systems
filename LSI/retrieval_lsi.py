@@ -65,9 +65,9 @@ class LatentSemanticIndex(retrieval.InitRetrievalSystem):
         term_index_mapping_list = []
         term_index = 0
         for term, doc_ids in self.dictionary.items():
+            term_index_mapping_list.append(term)
             for doc_id in doc_ids:
                 self.term_doc_matrix[term_index, np.argwhere(self.doc_id_index_mapping == doc_id)] += 1
-                term_index_mapping_list.append(term)
 
             term_index += 1
 
@@ -94,7 +94,9 @@ class LatentSemanticIndex(retrieval.InitRetrievalSystem):
 
         for doc in range(len(self.doc_id_index_mapping)):
             doc_vec = self.vd_prime[:, doc]
-            query_doc_sim[doc] = cosinus_similarity(query_vector, doc_vec)
+            query_doc_sim[doc] = cosinus_similarity(latent_space_query_vec, np.transpose(doc_vec))
+
+        query_doc_sim[np.isnan(query_doc_sim)] = 0
 
         return query_doc_sim
 
@@ -123,7 +125,7 @@ class LatentSemanticIndex(retrieval.InitRetrievalSystem):
 
         for i in range(k):
             doc_index = np.argmax(query_doc_sims)
-            top_k_docids.append((self.doc_id_index_mapping[doc_index], query_doc_sims[doc_index]))
+            top_k_docids.append((int(self.doc_id_index_mapping[doc_index]), query_doc_sims[doc_index]))
             query_doc_sims[doc_index] = 0
         return top_k_docids
 
