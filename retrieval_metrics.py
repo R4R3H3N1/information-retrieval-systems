@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+import numpy as np
+
 import configuration
 import os
 
@@ -32,6 +34,29 @@ def precision(y_true, y_pred):
     except ZeroDivisionError:
         return 0.0
 
+
+# --------------------------------------------------------------------------- #
+def average_precision(y_true, y_pred):
+    y_pred_set = set(y_pred)
+    y_true_set = set(y_true)
+
+    tp = y_pred_set.intersection(y_true_set)
+    fn = y_true_set.difference(y_pred_set)
+
+    p_sum = 0
+
+    for match in tp:
+        match_pos = np.argwhere(np.array(y_pred) == match)
+        p_sum += precision(y_true, y_pred[:match_pos[0][0] + 1])
+
+    _precision = precision(y_true, y_pred)
+    for not_match in fn:
+        p_sum += _precision
+
+    try:
+        return p_sum / len(y_true)
+    except ZeroDivisionError:
+        return 0.0
 
 # --------------------------------------------------------------------------- #
 def recall(y_true, y_pred):
@@ -197,7 +222,7 @@ class RetrievalScorer:
         try:
             ap_sum = 0
             for i in range(len(queries)):
-                ap_sum += self.elevenPointAP(queries[i], groundtruths[i])
+                ap_sum += average_precision(queries[i], groundtruths[i])
             return (1 / len(queries)) * ap_sum
         except ZeroDivisionError:
             return 0.0
