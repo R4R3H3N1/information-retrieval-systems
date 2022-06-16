@@ -34,6 +34,18 @@ class InitRetrievalSystem(ABC):
 
 
 # =========================================================================== #
+def get_top_k(scores, k):
+    top_k_docids = []
+    if scores.size == 0:
+        return []
+
+    for i in range(k):
+        docid = np.argmax(scores)
+        top_k_docids.append((docid, scores[docid]))
+        scores[docid] = 0
+    return top_k_docids
+
+
 class VectorSpaceModel(InitRetrievalSystem):
     def __init__(self, filename: str):
         self.dictionary = {}
@@ -126,19 +138,8 @@ class VectorSpaceModel(InitRetrievalSystem):
     # --------------------------------------------------------------------------- #
     def retrieve_k(self, query, k):
 
-        return self.get_top_k(self.retrieve(query), k)
+        return get_top_k(self.retrieve(query), k)
 
-    # --------------------------------------------------------------------------- #
-    def get_top_k(self, scores, k):
-        top_k_docids = []
-        if scores.size == 0:
-            return []
-        
-        for i in range(k):
-            docid = np.argmax(scores)
-            top_k_docids.append((docid, scores[docid]))
-            scores[docid] = 0
-        return top_k_docids
 
 # =========================================================================== #
 class TermIndex:
