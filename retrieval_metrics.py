@@ -129,7 +129,7 @@ class RetrievalScorer:
         self.retrieval_system = system
 
     # --------------------------------------------------------------------------- #
-    def rPrecision(self, y_true, y_pred):
+    def rPrecision(self, y_true, query):
         """
         Calculates the precision at R where R denotes the number of all relevant
         documents to a given query.
@@ -144,10 +144,19 @@ class RetrievalScorer:
         Returns
         -------
         Score: float
-            R-precision = TP / (TP + FN)
+            R-precision = TP / (TP + FP)
         """
+
+        result = self.retrieval_system.retrieve_k(query, len(y_true))
+        y_pred_set = set([res[0] for res in result])
         y_true_set = set(y_true)
 
+        tp = y_pred_set.intersection(y_true_set)
+
+        try:
+            return len(tp) / len(y_true_set)
+        except ZeroDivisionError:
+            return 0.0
 
     # --------------------------------------------------------------------------- #
     def elevenPointAP(self, query, y_true):
@@ -254,3 +263,4 @@ class RetrievalScorer:
     def plot_metric(self, metric):
         plt.hist(metric)
         plt.show()
+        
