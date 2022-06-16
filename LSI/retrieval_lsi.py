@@ -87,15 +87,43 @@ class LatentSemanticIndex(retrieval.InitRetrievalSystem):
 
     # --------------------------------------------------------------------------- #
     def retrieve(self, query):
-        query_terms = tokenizer.create_token_stream(query)
-        query_tf = Counter(query_terms)
+        query_vector = self.map_query_to_vector(query)
+        latent_space_query_vec = self.map_query_vec_to_latent_space(query_vector)
 
-        # TODO implement retrieve with cosinus similarity
+        query_doc_sim = np.zeros((len(self.doc_id_index_mapping)))
 
-        return []
+        for doc in range(len(self.doc_id_index_mapping)):
+            doc_vec = self.vd_prime[:, doc]
+            query_doc_sim[doc] = cosinus_similarity(query_vector, doc_vec)
+
+        return query_doc_sim
 
     # --------------------------------------------------------------------------- #
     def retrieve_k(self, query, k):
+        return self.get_top_k(self.retrieve(query), k)
 
-        return retrieval.get_top_k(self.retrieve(query), k)
+    # --------------------------------------------------------------------------- #
+    def map_query_to_vector(self, query):
+        query_terms = tokenizer.create_token_stream(query)
+
+        query_vector = np.zeros((len(self.dictionary.keys())))
+
+        for index, term in enumerate(self.term_index_mapping):
+            if term in query_terms:
+                query_vector[index] = 1
+
+        return query_vector
+
+    # --------------------------------------------------------------------------- #
+    def map_query_vec_to_latent_space(self, vec):
+        return np.matmul(np.matmul(self.sd_inv, np.transpose(self.ud_prime)), vec)
+
+    def get_top_k(self, query_doc_sims, k):
+        top_k_docids = []
+
+        for i in range(k):
+            doc_index = np.argmax(query_doc_sims)
+            top_k_docids.append((self.doc_id_index_mapping[doc_index], query_doc_sims[doc_index]))
+            query_doc_sims[doc_index] = 0
+        return top_k_docids
 
