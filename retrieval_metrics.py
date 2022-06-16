@@ -194,7 +194,13 @@ class RetrievalScorer:
         Score: float
             MAP = frac{1}{|Q|} \cdot \sum_{q \in Q} AP(q).
         """
-        pass
+        try:
+            ap_sum = 0
+            for i in range(len(queries)):
+                ap_sum += self.elevenPointAP(queries[i], groundtruths[i])
+            return (1 / len(queries)) * ap_sum
+        except ZeroDivisionError:
+            return 0.0
 
     # --------------------------------------------------------------------------- #
     def pares_queries(self):
@@ -263,4 +269,3 @@ class RetrievalScorer:
     def plot_metric(self, metric):
         plt.hist(metric)
         plt.show()
-        
