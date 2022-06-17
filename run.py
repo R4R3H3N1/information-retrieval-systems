@@ -15,4 +15,7 @@ if __name__ == '__main__':
 
     # Create LSI model
     i_lsi = LSI.retrieval_lsi.LatentSemanticIndex(os.path.join(os.getcwd(), "data", configuration.DOCS_FILE))
-    print("h")
+    #result = i_lsi.retrieve_k("berries to prevent muscle soreness", configuration.TOP_K_DOCS)
+    #print(f"Result: {result}")
+    scorer = retrieval_metrics.RetrievalScorer(i_lsi)
+    scorer.eval()

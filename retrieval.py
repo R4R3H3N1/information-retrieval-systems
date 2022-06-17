@@ -58,6 +58,10 @@ class VectorSpaceModel(InitRetrievalSystem):
 
     # --------------------------------------------------------------------------- #
     def invoke_toknizer(self, filename: str) -> None:
+
+        print("Started creating index.")
+        start = time.time()
+
         try:
             with open(filename, 'r', encoding='utf8') as f:
                 file = f.read()
@@ -86,6 +90,8 @@ class VectorSpaceModel(InitRetrievalSystem):
 
         for key, val in self.dictionary.items():
             val.final_sort_postinglist()
+
+        print(f"Finished creating index in {round(time.time() - start, 2)} seconds.")
 
     # --------------------------------------------------------------------------- #
     def calculate_average_doc_len(self):
@@ -138,7 +144,13 @@ class VectorSpaceModel(InitRetrievalSystem):
     # --------------------------------------------------------------------------- #
     def retrieve_k(self, query, k):
 
-        return get_top_k(self.retrieve(query), k)
+        print(f"Started executing query: {query}")
+        start = time.time()
+
+        result = get_top_k(self.retrieve(query), k)
+
+        print(f"Finished executing query in {round(time.time() - start, 2)} seconds.")
+        return result
 
 
 # =========================================================================== #

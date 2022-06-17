@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from collections import Counter
 from scipy.linalg import svd
 import numpy as np
@@ -35,6 +36,8 @@ class LatentSemanticIndex(retrieval.InitRetrievalSystem):
 
     # --------------------------------------------------------------------------- #
     def invoke_toknizer(self, filename: str) -> None:
+        print("Started creating index.")
+        start = time.time()
         try:
             with open(filename, 'r', encoding='utf8') as f:
                 file = f.read()
@@ -58,9 +61,12 @@ class LatentSemanticIndex(retrieval.InitRetrievalSystem):
 
         # Init term document matrix
         self.term_doc_matrix = np.zeros([len(self.dictionary.keys()), doc_id_index + 1])
+        print(f"Finished creating index in {round(time.time() - start, 2)} seconds.")
 
     # --------------------------------------------------------------------------- #
     def fill_term_doc_matrix(self):
+        print("Started creating term document matrix.")
+        start = time.time()
         # Fill term document matrix
         term_index_mapping_list = []
         term_index = 0
@@ -72,10 +78,15 @@ class LatentSemanticIndex(retrieval.InitRetrievalSystem):
             term_index += 1
 
         self.term_index_mapping = np.array(term_index_mapping_list)
+        print(f"Finished creating term document matrix in {round(time.time() - start, 2)} seconds.")
 
     # --------------------------------------------------------------------------- #
     def calculate_latent_space(self):
         d = configuration.LSI_D
+
+        print(f"Started calculating latent space with {d} dimensions.")
+        start = time.time()
+
         u, s, v = svd(self.term_doc_matrix, full_matrices=False)
         ud = u[:, 0:d]
         sd = s[0:d]
@@ -84,6 +95,8 @@ class LatentSemanticIndex(retrieval.InitRetrievalSystem):
         self.ud_prime = np.matmul(ud, sd_sqrt)
         self.vd_prime = np.matmul(sd_sqrt, vd)
         self.sd_inv = np.linalg.inv(np.diag(sd))
+
+        print(f"Finished calculating latent space in {round(time.time() - start, 2)} seconds.")
 
     # --------------------------------------------------------------------------- #
     def retrieve(self, query):
@@ -102,7 +115,11 @@ class LatentSemanticIndex(retrieval.InitRetrievalSystem):
 
     # --------------------------------------------------------------------------- #
     def retrieve_k(self, query, k):
-        return self.get_top_k(self.retrieve(query), k)
+        print(f"Started executing query: {query}")
+        start = time.time()
+        result = self.get_top_k(self.retrieve(query), k)
+        print(f"Finished executing query in {round(time.time() - start, 2)} seconds.")
+        return result
 
     # --------------------------------------------------------------------------- #
     def map_query_to_vector(self, query):
