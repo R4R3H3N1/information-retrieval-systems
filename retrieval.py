@@ -84,7 +84,7 @@ class VectorSpaceModel(InitRetrievalSystem):
                     self.dictionary[ti].append(docid, position_count)
                     ti.occurence += 1
                 except KeyError:
-                    self.dictionary[ti] = Postinglist(docid, position_count)
+                    self.dictionary[ti] = Postinglist(docid, position_count, token)
 
                 position_count += 1
 
@@ -108,18 +108,19 @@ class VectorSpaceModel(InitRetrievalSystem):
         # TODO sparse matrix, docids not continuous
         # TODO where to add log10?
         MAX_DOCID = np.max(list(self.docid_length_mapping.keys()))
-        N_DOCUMENTS = len(self.docid_length_mapping)
-        scores = np.zeros((MAX_DOCID + 1))  # TODO
+        scores = np.zeros((MAX_DOCID + 1))
 
         for q_term, q_term_tf in query_tf.items():
             try:
                 postinglist_obj = self.dictionary[self.term_index_mapping[q_term]]
             except KeyError as k:
-                print(f'Term {q_term} not present in corpus')
+                if configuration.LOGGING:
+                    print(f'Term {q_term} not present in corpus')
                 continue
 
             for docid in postinglist_obj.plist:
-                scores[docid] += self.fast_cosine_score(postinglist_obj, docid, q_term_tf)
+                #scores[docid] += self.fast_cosine_score(postinglist_obj, docid, q_term_tf)
+                scores[docid] += self.calc_score(postinglist_obj, docid)
 
         # TODO vectorizable
         for docid, _len in self.docid_length_mapping.items():
@@ -128,28 +129,32 @@ class VectorSpaceModel(InitRetrievalSystem):
         return scores
 
     # --------------------------------------------------------------------------- #
-    def calc_score(self, n_docs: int, postinglist_obj: Postinglist, docid: int) -> float:
+    def calc_score(self, postinglist_obj: Postinglist, docid: int) -> float:
         tf = len(postinglist_obj.positions[docid])
-        idf = n_docs / len(postinglist_obj.plist)
-        return (1 + np.log10(tf)) * np.log10(idf)
+        idf = len(self.docid_length_mapping) / len(postinglist_obj.plist)
+        #return (1 + np.log10(tf)) * np.log10(idf)
+        return tf * idf
 
     def fast_cosine_score(self, posting_list_obj, doc_id, query_freq):
         term_doc_freq = len(posting_list_obj.positions[doc_id])
         len_doc = self.docid_length_mapping[doc_id]
         N_DOCUMENTS = len(self.docid_length_mapping)
         d_f_t = posting_list_obj.occurrence
-        return query_freq * (term_doc_freq / (term_doc_freq + (configuration.K * (len_doc / self.average_doc_len)))
+        score = query_freq * (term_doc_freq / (term_doc_freq + (configuration.K * (len_doc / self.average_doc_len)))
                              * np.log((N_DOCUMENTS / d_f_t)))
+        return score
 
     # --------------------------------------------------------------------------- #
     def retrieve_k(self, query, k):
 
-        print(f"Started executing query: {query}")
+        if configuration.LOGGING:
+            print(f"Started executing query: {query}")
         start = time.time()
 
         result = get_top_k(self.retrieve(query), k)
 
-        print(f"Finished executing query in {round(time.time() - start, 2)} seconds.")
+        if configuration.LOGGING:
+            print(f"Finished executing query in {round(time.time() - start, 2)} seconds.")
         return result
 
 
@@ -167,13 +172,14 @@ class TermIndex:
 
 # =========================================================================== #
 class Postinglist:
-    __slots__ = ('plist', 'seen_docids', 'occurrence', 'positions')
+    __slots__ = ('plist', 'seen_docids', 'occurrence', 'positions', 'term')
 
-    def __init__(self, docid: int = None, position: int = None):
+    def __init__(self, docid: int = None, position: int = None, term = None):
         self.plist = []
         self.occurrence = 0
         self.seen_docids = set()
         self.positions = {}
+        self.term = term
 
         if docid:
             self.append(docid, position)

@@ -115,10 +115,12 @@ class LatentSemanticIndex(retrieval.InitRetrievalSystem):
 
     # --------------------------------------------------------------------------- #
     def retrieve_k(self, query, k):
-        print(f"Started executing query: {query}")
+        if configuration.LOGGING:
+            print(f"Started executing query: {query}")
         start = time.time()
         result = self.get_top_k(self.retrieve(query), k)
-        print(f"Finished executing query in {round(time.time() - start, 2)} seconds.")
+        if configuration.LOGGING:
+            print(f"Finished executing query in {round(time.time() - start, 2)} seconds.")
         return result
 
     # --------------------------------------------------------------------------- #

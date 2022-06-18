@@ -284,7 +284,12 @@ class RetrievalScorer:
         r_precision = []
 
         for qid, rel_docs in rel_map.items():
-            result = self.retrieval_system.retrieve_k(q_map[qid], configuration.TOP_K_DOCS)
+
+            if configuration.USE_EVAL_QUERIES:
+                if qid not in configuration.EVAL_QUERIES:
+                    continue
+            query = q_map[qid]
+            result = self.retrieval_system.retrieve_k(query, configuration.TOP_K_DOCS)
             r_precision.append(self.rPrecision(rel_docs, q_map[qid]))
             try:
                 # tupel in case of retrieve_k()
@@ -293,9 +298,13 @@ class RetrievalScorer:
                 predicted = result
 
             prec, rec, f1 = precision_recall_fscore(y_true=rel_docs, y_pred=predicted)
-            print(f'{q_map[qid]} \n \t TRUE: {rel_docs} \n  \t PRED: {predicted} \n \t Precision: {prec} Recall: {rec} F1: {f1} \n')
+            if configuration.LOGGING:
+                print(f'{q_map[qid]} \n \t TRUE: {rel_docs} \n  \t PRED: {sorted(predicted)} \n \t Precision: {prec} Recall: {rec} F1: {f1} \n')
             list_recall.append(rec)
             list_precision.append(prec)
             list_f1.append(f1)
 
-        plot_metric("R-Precision", r_precision)
+        #plot_metric("prec", list_precision)
+        #plot_metric("rec", list_recall)
+
+

@@ -11,10 +11,15 @@ TERM_SPLIT_CHARACTERS = ["\" ", " \"", "?", ", ", "!", ".\n", ". ", "&", "\n", "
 ABSTRACT_BEGINNINGS = ["Abstract", "Preface", "Summary", "Short", "Synopsis", "Excerpt"]
 
 # Amount of documents that should be returned
-TOP_K_DOCS = 10
+TOP_K_DOCS = 20
 
 # K inside wf_t_d method
-K = 2
+K = 1.2
 
 # Latent Semantic Indexing latent space dimensions
 LSI_D = 50
+
+LOGGING = True
+
+USE_EVAL_QUERIES = True
+EVAL_QUERIES = ['PLAIN-121', 'PLAIN-1021', 'PLAIN-15', 'PLAIN-145', 'PLAIN-1336']
