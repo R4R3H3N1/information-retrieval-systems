@@ -19,7 +19,9 @@ K = 1.2
 # Latent Semantic Indexing latent space dimensions
 LSI_D = 50
 
-LOGGING = True
+LOGGING = False
+
+CAlC_elevenAP = True
 
 USE_EVAL_QUERIES = True
 EVAL_QUERIES = ['PLAIN-121', 'PLAIN-1021', 'PLAIN-15', 'PLAIN-145', 'PLAIN-1336']

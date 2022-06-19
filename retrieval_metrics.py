@@ -123,12 +123,22 @@ def precision_recall_fscore(y_true, y_pred, beta=1.0):
 
 
 # --------------------------------------------------------------------------- #
-def plot_metric(metric_name, metric):
-    plt.title(metric_name)
-    plt.hist(metric)
-    plt.show()
+def plot_metric_hist(title, values):
+    fig, ax = plt.subplots()
+    ax.set_title(title)
+    ax.hist(values)
+    return fig
 
+def plot_metric_curve(title, x, y, xlabel, ylabel):
+    fig, ax = plt.subplots()
+    ax.set_title(title)
+    ax.set_ylabel(ylabel)
+    ax.set_xlabel(xlabel)
+    ax.plot(x,y)
 
+    return fig
+
+# =========================================================================== #
 class RetrievalScorer:
     """
     Retrieval score system.
@@ -207,7 +217,21 @@ class RetrievalScorer:
         Tuple: (float, list, list)
             (11-point average precision score, recall levels, precision levels).
         """
-        pass
+        recall_precison_map = {}
+        for k in range(len(y_true)):
+            result = self.retrieval_system.retrieve_k(query, k)
+            try:
+                predicted = [res[0] for res in result]
+            except Exception:
+                predicted = result
+
+            prec, rec, _ = precision_recall_fscore(y_true=y_true, y_pred=predicted)
+            try:
+                recall_precison_map[round(rec,1)].append(prec)
+            except KeyError:
+                recall_precison_map[round(rec,1)] = [prec]
+
+        return recall_precison_map
 
     # --------------------------------------------------------------------------- #
     def MAP(self, queries, groundtruths):
@@ -280,7 +304,7 @@ class RetrievalScorer:
         list_precision = []
         list_recall = []
         list_f1 = []
-
+        elevenAP = {}
         r_precision = []
 
         for qid, rel_docs in rel_map.items():
@@ -289,6 +313,14 @@ class RetrievalScorer:
                 if qid not in configuration.EVAL_QUERIES:
                     continue
             query = q_map[qid]
+
+            if configuration.CAlC_elevenAP:
+                for rec, prec_list in self.elevenPointAP(query, rel_docs).items():
+                    try:
+                        elevenAP[rec] += prec_list
+                    except KeyError:
+                        elevenAP[rec] = prec_list
+
             result = self.retrieval_system.retrieve_k(query, configuration.TOP_K_DOCS)
             r_precision.append(self.rPrecision(rel_docs, q_map[qid]))
             try:
@@ -304,7 +336,21 @@ class RetrievalScorer:
             list_precision.append(prec)
             list_f1.append(f1)
 
-        #plot_metric("prec", list_precision)
-        #plot_metric("rec", list_recall)
+        if configuration.CAlC_elevenAP:
+            x, y = [], []
+            for rec, prec_list in elevenAP.items():
+                x.append(rec)
+                y.append(sum(prec_list)/len(prec_list))
+            ap = plot_metric_curve('11AP', x, y, 'recall', 'precision')
+            ap.show()
+
+        p = plot_metric_hist("prec", list_precision)
+        r = plot_metric_hist("rec", list_recall)
+
+        p.show()
+        r.show()
+        plt.show()
+
+
 
 
