@@ -134,7 +134,7 @@ def plot_metric_curve(title, x, y, xlabel, ylabel):
     ax.set_title(title)
     ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
-    ax.plot(x,y)
+    ax.plot(x,y, marker='o')
 
     return fig
 
@@ -231,7 +231,12 @@ class RetrievalScorer:
             except KeyError:
                 recall_precison_map[round(rec,1)] = [prec]
 
-        return recall_precison_map
+        recall_levels, precision_levels = [], []
+        for rec, prec_list in recall_precison_map.items():
+            recall_levels.append(rec)
+            precision_levels.append(sum(prec_list) / len(prec_list))
+
+        return sum(precision_levels) / len(precision_levels), recall_levels, precision_levels
 
     # --------------------------------------------------------------------------- #
     def MAP(self, queries, groundtruths):
@@ -304,22 +309,25 @@ class RetrievalScorer:
         list_precision = []
         list_recall = []
         list_f1 = []
-        elevenAP = {}
+        ap_map = {}
+        ap_scores = []
         r_precision = []
 
         for qid, rel_docs in rel_map.items():
+            query = q_map[qid]
 
             if configuration.USE_EVAL_QUERIES:
                 if qid not in configuration.EVAL_QUERIES:
                     continue
-            query = q_map[qid]
 
             if configuration.CAlC_elevenAP:
-                for rec, prec_list in self.elevenPointAP(query, rel_docs).items():
+                ap_score, recall_levels, precision_levels = self.elevenPointAP(query, rel_docs)
+                for rec, prec in zip(recall_levels, precision_levels):
                     try:
-                        elevenAP[rec] += prec_list
+                        ap_map[rec].append(prec)
                     except KeyError:
-                        elevenAP[rec] = prec_list
+                        ap_map[rec] = [prec]
+                ap_scores.append(ap_score)
 
             result = self.retrieval_system.retrieve_k(query, configuration.TOP_K_DOCS)
             r_precision.append(self.rPrecision(rel_docs, q_map[qid]))
@@ -337,8 +345,9 @@ class RetrievalScorer:
             list_f1.append(f1)
 
         if configuration.CAlC_elevenAP:
+            mean_ap_score = sum(ap_scores)/len(ap_scores)
             x, y = [], []
-            for rec, prec_list in elevenAP.items():
+            for rec, prec_list in ap_map.items():
                 x.append(rec)
                 y.append(sum(prec_list)/len(prec_list))
             ap = plot_metric_curve('11AP', x, y, 'recall', 'precision')
