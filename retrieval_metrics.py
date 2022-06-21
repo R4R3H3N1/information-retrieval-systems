@@ -404,9 +404,10 @@ class RetrievalScorer:
         if configuration.CAlC_elevenAP:
             mean_elevenap_score = sum(ap_scores)/len(ap_scores)
             x, y = [], []
-            for rec, prec_list in ap_map.items():
+
+            for rec in sorted(ap_map.keys()):
                 x.append(rec)
-                y.append(sum(prec_list)/len(prec_list))
+                y.append(sum(ap_map[rec])/len(ap_map[rec]))
             ap = plot_metric_curve('11AP', x, y, 'recall', 'precision')
             ap.show()
 
