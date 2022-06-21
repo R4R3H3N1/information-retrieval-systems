@@ -124,9 +124,21 @@ def precision_recall_fscore(y_true, y_pred, beta=1.0):
 
 # --------------------------------------------------------------------------- #
 def plot_metric_hist(title, values):
-    fig, ax = plt.subplots()
-    ax.set_title(title)
-    ax.hist(values)
+    try:
+        if isinstance(values[1], list):
+            fig, axes = plt.subplots(2,2)
+            axes[0,0].hist(values[0])
+            axes[0, 0].set_title(f'{title} @ 5')
+            axes[1, 1].hist(values[1])
+            axes[1, 1].set_title(f'{title} @ 10')
+            axes[0, 1].hist(values[2])
+            axes[0, 1].set_title(f'{title} @ 20')
+            axes[1, 0].hist(values[3])
+            axes[1, 0].set_title(f'{title} @ 50')
+    except Exception:
+        fig, ax = plt.subplots()
+        ax.set_title(title)
+        ax.hist(values)
     return fig
 
 def plot_metric_curve(title, x, y, xlabel, ylabel):
@@ -218,7 +230,7 @@ class RetrievalScorer:
             (11-point average precision score, recall levels, precision levels).
         """
         recall_precison_map = {}
-        for k in range(len(y_true)):
+        for k in range(450):
             result = self.retrieval_system.retrieve_k(query, k)
             try:
                 predicted = [res[0] for res in result]
@@ -258,9 +270,10 @@ class RetrievalScorer:
         try:
             ap_sum = 0
             for i in range(len(queries)):
-                ap_sum += average_precision([res[0] for res in self.retrieval_system.retrieve_k(queries[i],
-                                                                                                configuration.K)],
-                                            groundtruths[i])
+                ap_sum += average_precision(
+                    [res[0] for res in self.retrieval_system.retrieve_k(
+                        queries[i],configuration.TOP_K_DOCS)],groundtruths[i]
+                )
             return (1 / len(queries)) * ap_sum
         except ZeroDivisionError:
             return 0.0
@@ -306,12 +319,25 @@ class RetrievalScorer:
         q_map = self.pares_queries()
         rel_map = self.parse_qrel()
 
-        list_precision = []
-        list_recall = []
-        list_f1 = []
+        MAP_dict_queries = []
+        MAP_dict_ytrue = []
+        list_precision_at5 = []
+        list_precision_at10 = []
+        list_precision_at20 = []
+        list_precision_at50 = []
+        list_recall_at5 = []
+        list_recall_at10 = []
+        list_recall_at20 = []
+        list_recall_at50 = []
+        list_f1_at5 = []
+        list_f1_at10 = []
+        list_f1_at20 = []
+        list_f1_at50 = []
         ap_map = {}
         ap_scores = []
         r_precision = []
+
+        k_list = [5, 10,20,50]
 
         for qid, rel_docs in rel_map.items():
             query = q_map[qid]
@@ -319,6 +345,12 @@ class RetrievalScorer:
             if configuration.USE_EVAL_QUERIES:
                 if qid not in configuration.EVAL_QUERIES:
                     continue
+
+            MAP_dict_ytrue.append(rel_docs)
+            MAP_dict_queries.append(query)
+
+            r_prec = self.rPrecision(rel_docs, query)
+            r_precision.append(r_prec)
 
             if configuration.CAlC_elevenAP:
                 ap_score, recall_levels, precision_levels = self.elevenPointAP(query, rel_docs)
@@ -328,24 +360,49 @@ class RetrievalScorer:
                     except KeyError:
                         ap_map[rec] = [prec]
                 ap_scores.append(ap_score)
+            print(query)
+            for k in k_list:
+                result = self.retrieval_system.retrieve_k(query, k)
 
-            result = self.retrieval_system.retrieve_k(query, configuration.TOP_K_DOCS)
-            r_precision.append(self.rPrecision(rel_docs, q_map[qid]))
-            try:
-                # tupel in case of retrieve_k()
-                predicted = [res[0] for res in result]
-            except Exception:
-                predicted = result
+                try:
+                    # tupel in case of retrieve_k()
+                    predicted = [res[0] for res in result]
+                except Exception:
+                    predicted = result
 
-            prec, rec, f1 = precision_recall_fscore(y_true=rel_docs, y_pred=predicted)
-            if configuration.LOGGING:
-                print(f'{q_map[qid]} \n \t TRUE: {rel_docs} \n  \t PRED: {sorted(predicted)} \n \t Precision: {prec} Recall: {rec} F1: {f1} \n')
-            list_recall.append(rec)
-            list_precision.append(prec)
-            list_f1.append(f1)
+                prec, rec, f1 = precision_recall_fscore(y_true=rel_docs, y_pred=predicted)
+
+                if configuration.LOGGING:
+                    print(f'{q_map[qid]} \n \t TRUE: {rel_docs} \n  \t PRED: {sorted(predicted)} \n \t Precision: {prec} Recall: {rec} F1: {f1} \n')
+
+                print(f'precison @ {k} {prec}')
+                print(f'recall @ {k} {rec}')
+                print(f'f1 @ {k} {f1}')
+                print('\n')
+                if k == 5:
+                    list_recall_at5.append(rec)
+                    list_precision_at5.append(prec)
+                    list_f1_at5.append(f1)
+                if k == 10:
+                    list_recall_at10.append(rec)
+                    list_precision_at10.append(prec)
+                    list_f1_at10.append(f1)
+                if k == 20:
+                    list_recall_at20.append(rec)
+                    list_precision_at20.append(prec)
+                    list_f1_at20.append(f1)
+                if k == 50:
+                    list_recall_at50.append(rec)
+                    list_precision_at50.append(prec)
+                    list_f1_at50.append(f1)
+
+            print(f'r precison {r_prec}')
+            print(f'ap {ap_score}')
+            print('===================================')
+
 
         if configuration.CAlC_elevenAP:
-            mean_ap_score = sum(ap_scores)/len(ap_scores)
+            mean_elevenap_score = sum(ap_scores)/len(ap_scores)
             x, y = [], []
             for rec, prec_list in ap_map.items():
                 x.append(rec)
@@ -353,9 +410,15 @@ class RetrievalScorer:
             ap = plot_metric_curve('11AP', x, y, 'recall', 'precision')
             ap.show()
 
-        p = plot_metric_hist("prec", list_precision)
-        r = plot_metric_hist("rec", list_recall)
+        map = self.MAP(MAP_dict_queries, MAP_dict_ytrue)
+        print(f'map {map}')
+        print(f'mean ap {mean_elevenap_score}')
 
+        p = plot_metric_hist("precision", [list_precision_at5, list_precision_at10, list_precision_at20, list_precision_at50])
+        r = plot_metric_hist("recall", [list_recall_at5, list_recall_at10, list_recall_at20, list_recall_at50])
+        f = plot_metric_hist("f1", [list_f1_at5, list_f1_at10, list_f1_at20,list_f1_at50])
+
+        f.show()
         p.show()
         r.show()
         plt.show()
