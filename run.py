@@ -10,8 +10,10 @@ import LSI.retrieval_lsi
 def query(indexer):
     while True:
         query_string = input("Enter query: ")
-        k = input("Enter top k: ")
         if query_string == "exit()":
+            break
+        k = input("Enter top k: ")
+        if k == "exit()":
             break
         print("--------------------------------------------------")
         start = time.time()
@@ -23,15 +25,16 @@ def query(indexer):
 
 if __name__ == '__main__':
 
-    # Create and Evaluate Vector Space Model
-    i_vector_space = retrieval.VectorSpaceModel(os.path.join(os.getcwd(), "data", configuration.DOCS_FILE))
-    #query(i_vector_space)
-    scorer = retrieval_metrics.RetrievalScorer(i_vector_space)
-    scorer.eval()
-
-    # # Create LSI model
-    i_lsi = LSI.retrieval_lsi.LatentSemanticIndex(os.path.join(os.getcwd(), "data", configuration.DOCS_FILE))
-    #result = i_lsi.retrieve_k("berries to prevent muscle soreness", configuration.TOP_K_DOCS)
-    # #print(f"Result: {result}")
-    #scorer = retrieval_metrics.RetrievalScorer(i_lsi)
-    #scorer.eval()
+    if configuration.MODEL == "VEC":
+        # Create and Evaluate Vector Space Model
+        i_vector_space = retrieval.VectorSpaceModel(os.path.join(os.getcwd(), "data", configuration.DOCS_FILE))
+        query(i_vector_space)
+        #scorer = retrieval_metrics.RetrievalScorer(i_vector_space)
+        #scorer.eval()
+    elif configuration.MODEL == "LSI":
+        # Create LSI model
+        i_lsi = LSI.retrieval_lsi.LatentSemanticIndex(os.path.join(os.getcwd(), "data", configuration.DOCS_FILE))
+        query(i_lsi)
+        #scorer = retrieval_metrics.RetrievalScorer(i_lsi)
+        #scorer.eval()
+        
