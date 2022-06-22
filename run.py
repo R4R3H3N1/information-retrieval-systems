@@ -30,8 +30,8 @@ if __name__ == '__main__':
     scorer.eval()
 
     # # Create LSI model
-    # i_lsi = LSI.retrieval_lsi.LatentSemanticIndex(os.path.join(os.getcwd(), "data", configuration.DOCS_FILE))
-    # #result = i_lsi.retrieve_k("berries to prevent muscle soreness", configuration.TOP_K_DOCS)
+    i_lsi = LSI.retrieval_lsi.LatentSemanticIndex(os.path.join(os.getcwd(), "data", configuration.DOCS_FILE))
+    #result = i_lsi.retrieve_k("berries to prevent muscle soreness", configuration.TOP_K_DOCS)
     # #print(f"Result: {result}")
-    # scorer = retrieval_metrics.RetrievalScorer(i_lsi)
-    # scorer.eval()
+    #scorer = retrieval_metrics.RetrievalScorer(i_lsi)
+    #scorer.eval()

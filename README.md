@@ -64,10 +64,71 @@ AP: 0.685
 R-precision 0.125 <br>
 AP: 0.023
 
------------
-
 MAP 0.138 <br>
 gemittelte 11-point AP 0.271
+-----------
+# LSI
+`why do heart doctors favor surgery and drugs over diet ?`
+
+| metric    | @5 | @10 | @20   | @50   |
+|-----------|----|-----|-------|-------|
+| precision | 0  | 0   | 0.05  | 0.04  |
+| recall    | 0  | 0   | 0.026 | 0.051 |
+| f1        | 0  | 0   | 0.034 | 0.045 |
+
+R-precision: 0.0256  <br>
+AP: 0.0359
+
+-----------
+`berries to prevent muscle soreness`
+
+| metric    | @5 | @10 | @20   | @50   |
+|-----------|----|-----|-------|-------|
+| precision | 0  | 0   | 0.05  | 0.02  |
+| recall    | 0  | 0   | 0.014 | 0.014 |
+| f1        | 0  | 0   | 0.022 | 0.017 |
+
+R-precision: 0.0286 <br>
+AP: 0.023
+
+-------------
+`fukushima radiation and seafood`
+
+| metric    | @5 | @10 | @20 | @50 |
+|-----------|----|-----|-----|-----|
+| precision | 0  | 0   | 0   | 0   |
+| recall    | 0  | 0   | 0   | 0   |
+| f1        | 0  | 0   | 0   | 0   |
+
+R-precision: 0.0 <br>
+AP: 0.014
+
+----------------------
+
+`diabetes`
+
+| metric    | @5    | @10   | @20   | @50   |
+|-----------|-------|-------|-------|-------|
+| precision | 1     | 1     | 0.95  | 0.78  |
+| recall    | 0.008 | 0.017 | 0.032 | 0.067 |
+| f1        | 0.017 | 0.033 | 0.062 | 0.122 |
+
+R-precision: 0.353 <br>
+AP 0.679
+-----------------
+`heart rate variability`
+
+| metric    | @5 | @10 | @20 | @50 |
+|-----------|----|-----|-----|-----|
+| precision | 0  | 0   | 0   | 0   |
+| recall    | 0  | 0   | 0   | 0   |
+| f1        | 0  | 0   | 0   | 0   |
+
+R-precision: 0.0
+AP: 0.0015
+
+MAP 0.0032
+gemittelte 11-point AP 0.1507
 
 <img src="/images/11AP.png">
 <img src="/images/precision.png">
