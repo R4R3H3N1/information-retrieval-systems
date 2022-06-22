@@ -119,8 +119,7 @@ class VectorSpaceModel(InitRetrievalSystem):
                 continue
 
             for docid in postinglist_obj.plist:
-                #scores[docid] += self.fast_cosine_score(postinglist_obj, docid, q_term_tf)
-                scores[docid] += self.calc_score(postinglist_obj, docid)
+                scores[docid] += self.fast_cosine_score(postinglist_obj, docid, q_term_tf)
 
         # TODO vectorizable
         for docid, _len in self.docid_length_mapping.items():
@@ -129,19 +128,13 @@ class VectorSpaceModel(InitRetrievalSystem):
         return scores
 
     # --------------------------------------------------------------------------- #
-    def calc_score(self, postinglist_obj: Postinglist, docid: int) -> float:
-        tf = len(postinglist_obj.positions[docid])
-        idf = len(self.docid_length_mapping) / len(postinglist_obj.plist)
-        #return (1 + np.log10(tf)) * np.log10(idf)
-        return tf * idf
-
     def fast_cosine_score(self, posting_list_obj, doc_id, query_freq):
         term_doc_freq = len(posting_list_obj.positions[doc_id])
         len_doc = self.docid_length_mapping[doc_id]
         N_DOCUMENTS = len(self.docid_length_mapping)
         d_f_t = posting_list_obj.occurrence
         score = query_freq * (term_doc_freq / (term_doc_freq + (configuration.K * (len_doc / self.average_doc_len)))
-                             * np.log((N_DOCUMENTS / d_f_t)))
+                              * np.log((N_DOCUMENTS / d_f_t)))
         return score
 
     # --------------------------------------------------------------------------- #
