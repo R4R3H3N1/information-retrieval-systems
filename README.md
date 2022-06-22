@@ -66,6 +66,7 @@ AP: 0.023
 
 MAP 0.138 <br>
 gemittelte 11-point AP 0.271
+
 -----------
 # LSI
 `why do heart doctors favor surgery and drugs over diet ?`
@@ -115,6 +116,7 @@ AP: 0.014
 
 R-precision: 0.353 <br>
 AP 0.679
+
 -----------------
 `heart rate variability`
 
