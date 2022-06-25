@@ -4,6 +4,7 @@ import time
 from collections import Counter
 from scipy.linalg import svd
 import numpy as np
+import matplotlib.pyplot as plt
 
 import configuration
 import retrieval
@@ -95,6 +96,9 @@ class LatentSemanticIndex(retrieval.InitRetrievalSystem):
         self.ud_prime = np.matmul(ud, sd_sqrt)
         self.vd_prime = np.matmul(sd_sqrt, vd)
         self.sd_inv = np.linalg.inv(np.diag(sd))
+        self.u = u
+        self.s = s
+        self.v = v
 
         print(f"Finished calculating latent space in {round(time.time() - start, 2)} seconds.")
 
@@ -147,4 +151,43 @@ class LatentSemanticIndex(retrieval.InitRetrievalSystem):
             top_k_docids.append((int(self.doc_id_index_mapping[doc_index]), query_doc_sims[doc_index]))
             query_doc_sims[doc_index] = 0
         return top_k_docids
+
+    # --------------------------------------------------------------------------- #
+    def visualize(self):
+        U_3 = self.u[:, :3]
+        S_3 = np.diag(self.s[:3])
+        V_3 = self.v[:3, :]
+
+        U_3_prime = U_3.dot(np.sqrt(S_3))
+        V_3_prime = np.sqrt(S_3).dot(V_3)
+
+        U_3_prime_plot = U_3_prime[:, 1:3]
+        V_3_prime_plot = V_3_prime[1:3, :]
+
+
+
+        plt.style.use('seaborn-deep')
+        fig, ax = plt.subplots(figsize=(3, 2), constrained_layout=True)
+
+        np.random.seed(13)
+        idx_u = np.random.choice(U_3_prime_plot.shape[0], size=400, replace=False)
+        idx_v = np.random.choice(V_3_prime_plot.shape[1], size=400, replace=False)
+        # ax.scatter(U_3_prime_plot[:, 0], U_3_prime_plot[:, 1], marker='o', color='orange')
+        # ax.scatter(V_3_prime_plot[0, :], V_3_prime_plot[1, :], marker='x', color='red')
+        ax.scatter(U_3_prime_plot[idx_u, 0], U_3_prime_plot[idx_u, 1], marker='o', color='orange', label='terms')
+        ax.scatter(V_3_prime_plot[0, idx_v], V_3_prime_plot[1, idx_v], marker='x', color='red', label='docs')
+
+        q = ['diabetes', 'why do heart doctors favor surgery and drugs over diet ?', 'berries to prevent muscle soreness', 'fukushima radiation and seafood', 'heart rate variability']
+        for query in q:
+            query_vector = self.map_query_to_vector(query)
+            latent_space_query_vec = self.map_query_vec_to_latent_space(query_vector)
+            query_plot = latent_space_query_vec[1:3]
+            if query == 'diabetes':
+                ax.scatter(query_plot[0], query_plot[1], marker='s', color='green', label='queries')
+            else:
+                ax.scatter(query_plot[0], query_plot[1], marker='s', color='green')
+
+        ax.set_title('Projektion in den latenten Raum')
+        plt.legend()
+        plt.show()
 

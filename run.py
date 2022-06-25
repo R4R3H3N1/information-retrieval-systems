@@ -34,7 +34,8 @@ if __name__ == '__main__':
     elif configuration.MODEL == "LSI":
         # Create LSI model
         i_lsi = LSI.retrieval_lsi.LatentSemanticIndex(os.path.join(os.getcwd(), "data", configuration.DOCS_FILE))
-        query(i_lsi)
+        #query(i_lsi)
+        i_lsi.visualize()
         #scorer = retrieval_metrics.RetrievalScorer(i_lsi)
         #scorer.eval()
         

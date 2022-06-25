@@ -16,6 +16,8 @@ TOP_K_DOCS = 10
 # K inside wf_t_d method
 K = 1.2
 
+MODEL = 'LSI'
+
 # Latent Semantic Indexing latent space dimensions
 LSI_D = 50
 
