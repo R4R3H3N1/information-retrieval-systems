@@ -14,9 +14,9 @@ ABSTRACT_BEGINNINGS = ["Abstract", "Preface", "Summary", "Short", "Synopsis", "E
 TOP_K_DOCS = 10
 
 # K inside wf_t_d method
-K = 1.2
+K = 2
 
-MODEL = 'LSI'
+MODEL = 'VEC'
 
 # Latent Semantic Indexing latent space dimensions
 LSI_D = 50
@@ -27,6 +27,11 @@ CAlC_elevenAP = True
 
 USE_EVAL_QUERIES = True
 EVAL_QUERIES = ['PLAIN-121', 'PLAIN-1021', 'PLAIN-15', 'PLAIN-145', 'PLAIN-1336']
+
+#EVAL_QUERIES = ['PLAIN-121']
+# PLAIN-145 fukushima
+#PLAIN-1021 diabetes
+
 
 # for 11 AP
 #EVAL_QUERIES = ['PLAIN-121', 'PLAIN-1021', 'PLAIN-15', 'PLAIN-145', 'PLAIN-1336', 'PLAIN-3', 'PLAIN-4', 'PLAIN-5', 'PLAIN-6','PLAIN-7', 'PLAIN-8', 'PLAIN-9',

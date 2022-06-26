@@ -230,7 +230,7 @@ class RetrievalScorer:
             (11-point average precision score, recall levels, precision levels).
         """
         recall_precison_map = {}
-        for k in range(450):
+        for k in range(1, 450):
             result = self.retrieval_system.retrieve_k(query, k)
             try:
                 predicted = [res[0] for res in result]
@@ -240,8 +240,10 @@ class RetrievalScorer:
             prec, rec, _ = precision_recall_fscore(y_true=y_true, y_pred=predicted)
             try:
                 recall_precison_map[round(rec,1)].append(prec)
+                #recall_precison_map[round(rec, 3)].append(prec)
             except KeyError:
                 recall_precison_map[round(rec,1)] = [prec]
+                #recall_precison_map[round(rec, 3)] = [prec]
 
         recall_levels, precision_levels = [], []
         for rec, prec_list in recall_precison_map.items():
@@ -408,6 +410,7 @@ class RetrievalScorer:
             for rec in sorted(ap_map.keys()):
                 x.append(rec)
                 y.append(sum(ap_map[rec])/len(ap_map[rec]))
+                #y.append(ap_map[rec][int(len(ap_map[rec])/2)])
             ap = plot_metric_curve('11AP', x, y, 'recall', 'precision')
             ap.show()
 
@@ -415,13 +418,13 @@ class RetrievalScorer:
         print(f'map {map}')
         print(f'mean ap {mean_elevenap_score}')
 
-        p = plot_metric_hist("precision", [list_precision_at5, list_precision_at10, list_precision_at20, list_precision_at50])
-        r = plot_metric_hist("recall", [list_recall_at5, list_recall_at10, list_recall_at20, list_recall_at50])
-        f = plot_metric_hist("f1", [list_f1_at5, list_f1_at10, list_f1_at20,list_f1_at50])
+        #p = plot_metric_hist("precision", [list_precision_at5, list_precision_at10, list_precision_at20, list_precision_at50])
+        #r = plot_metric_hist("recall", [list_recall_at5, list_recall_at10, list_recall_at20, list_recall_at50])
+        #f = plot_metric_hist("f1", [list_f1_at5, list_f1_at10, list_f1_at20,list_f1_at50])
 
-        f.show()
-        p.show()
-        r.show()
+        #f.show()
+        #p.show()
+        #r.show()
         plt.show()
 
 
